@@ -55,28 +55,10 @@ const HomeScreen = () => {
   }, [refresh]);
 
   useEffect(() => {
-    if (endedRacesInCurrentLine.length >= 4) {
-      setStartRefreshTimer(true);
+    if (endedRacesInCurrentLine.length > 4) {
+      setRefresh(true);
     }
   }, [endedRacesInCurrentLine]);
-
-  useEffect(() => {
-    if (startRefreshTimer) {
-      const interval = setInterval(() => {
-        setRefreshTimer((prevState) => {
-          if (prevState > 0) {
-            return prevState - 1;
-          }
-
-          setRefresh(true);
-
-          return 0;
-        });
-      }, 1000);
-
-      return () => clearInterval(interval);
-    }
-  }, [startRefreshTimer]);
 
   return (
     <div className="w-full h-full">
@@ -108,6 +90,9 @@ const HomeScreen = () => {
         </div>
         <div className="w-full  grid grid-cols-1 gap-8 lg:grid-cols-2">
           {races
+            .sort(function (x, y) {
+              return x.advertised_start.seconds - y.advertised_start.seconds;
+            })
             .filter((race) => {
               if (searchTerm.length) {
                 const isMatch =
@@ -129,6 +114,8 @@ const HomeScreen = () => {
 
               return true;
             })
+            .filter((race) => !endedRacesInCurrentLine.includes(race.race_id))
+            .filter((item, index) => index < 5)
             .map((race, index) => (
               <RaceCard
                 key={race.race_id}
